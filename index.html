@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Text Area Emails</title>
+  </head>
+  <body>
+    <div>
+      <form id="emailform">
+        <textarea name="emails" id="emails" cols="30" rows="10"></textarea>
+        <button id="populate">Ok</button>
+      </form>
+    </div>
+    <div id="output"></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM Content loaded');
+        document.getElementById('populate').addEventListener('click', e => {
+          e.preventDefault();
+          const separators = /,|;|\n|\r|\r\n|\t/gm;
+          const lastSpace = /\ (?!.*\ )/g;
+
+          const targetDiv = document.getElementById('output');
+          while (targetDiv.firstChild) {
+            targetDiv.removeChild(targetDiv.firstChild);
+          }
+
+          const nameEmailPairs = document
+            .getElementById('emails')
+            .value.split(separators)
+            .map(str => str.trim())
+            .filter(str => str != '')
+            .map(str => str.split(lastSpace))
+            // If there are names, emails come second, this arranges emails to position [0]
+            .map(innerArr => innerArr.reverse());
+
+          nameEmailPairs.forEach(nameEmailPair => {
+            const outerSymbols = /^\W*|\W*$/g;
+
+            const email = nameEmailPair[0].replace(outerSymbols, '');
+            const name = (nameEmailPair[1] ? nameEmailPair[1] : '').replace(
+              outerSymbols,
+              ''
+            );
+            // create p element
+            const p = document.createElement('p');
+            p.textContent = `${name ? name : ''}  ${outputFor(email)}`;
+            // mount p elemnt onto DOM at targetDiv
+            targetDiv.appendChild(p);
+
+            function outputFor(email) {
+              const emailValdiator = /^\w+([.\-_](?=\w))*\w*@([\w\-]*\.)*\.{0,1}\w{2,}$/g;
+              // Explanation of regex: https://regex101.com/r/1wg5tv/3
+              // Explanation of what went into regex: https://help.xmatters.com/ondemand/trial/valid_email_format.htm
+              if (emailValdiator.test(email)) {
+                return `<${email}>`;
+              } else {
+                return `${email} [error parsing email string]`;
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
