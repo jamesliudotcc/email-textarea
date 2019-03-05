@@ -19,6 +19,7 @@
         console.log('DOM Content loaded');
         document.getElementById('populate').addEventListener('click', e => {
           e.preventDefault();
+
           const separators = /,|;|\n|\r|\r\n|\t/gm;
           const lastSpace = /\ (?!.*\ )/g;
 
@@ -27,9 +28,12 @@
             targetDiv.removeChild(targetDiv.firstChild);
           }
 
-          const nameEmailPairs = document
-            .getElementById('emails')
-            .value.split(separators)
+          const rawInput = document.getElementById('emails').value;
+
+          // Replace with while loop to chomp off name-emails from front
+          possiblePairs = applySeparators(arrayify(rawInput));
+
+          nameEmailPairs = possiblePairs
             .map(str => str.trim())
             .filter(str => str != '')
             .map(str => str.split(lastSpace))
@@ -61,6 +65,24 @@
               }
             }
           });
+
+          function arrayify(rawInput) {
+            let inputString = rawInput;
+            let possiblePairs = [];
+            const possiblePairFinder = /^.*?@\S*/;
+
+            while (inputString.match(possiblePairFinder)) {
+              newPossiblePair = inputString.match(possiblePairFinder);
+              possiblePairs.push(newPossiblePair[0]);
+              inputString = inputString.replace(newPossiblePair, '');
+            }
+            return possiblePairs;
+          }
+
+          function applySeparators(inputArray) {
+            return inputArray.map(str => str.split(separators)).flat();
+            // Any further checks, e.g., finding various invalid emails, could go here
+          }
         });
       });
     </script>
